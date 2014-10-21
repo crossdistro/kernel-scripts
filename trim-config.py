@@ -76,6 +76,8 @@ class KernelConfig:
 	def trim_by_dist_config(self, dist):
 		trimmed = KernelConfig()
 
+		# everything that user sets which is not in dist, or
+		# differs from dist, will be included in trimmed config
 		for opt, value in self.options.iteritems():
 			if opt not in dist.options:
 				trimmed.options[opt] = value
@@ -83,10 +85,10 @@ class KernelConfig:
 			if value != dist.options[opt]:
 				trimmed.options[opt] = value
 
-		# everything that dist sets and is missing in trimmed,
-		# will be explicitly disabled
+		# everything that dist sets and is missing in user config,
+		# will be explicitly disabled in trimmed config
 		for opt in dist.options.iterkeys():
-			if opt not in trimmed.options:
+			if opt not in self.options:
 				trimmed.options[opt] = ("simple", "n")
 
 		return trimmed
