@@ -152,7 +152,7 @@ class KernelConfig:
                                 continue
                         if value != comb.options[opt]:
                                 was_changed.options[opt] = comb.options[opt]
-                                was_changed.old_options[opts] = value
+                                was_changed.old_options[opt] = value
 
                 for opt, value in comb.options.iteritems():
                         if opt not in self.options:
