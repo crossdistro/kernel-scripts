@@ -55,6 +55,11 @@ class KernelConfig:
 
 			print "unmatched line: " + line
 
+        def parse_file(self, filename):
+                cfg = open(filename, 'r')
+                self.parse(cfg)
+                cfg.close()
+
         def value_to_string(self, value):
                 if value[0] == "simple":
                         return value[1]
@@ -75,15 +80,25 @@ class KernelConfig:
                     return option + "=" + valstr
 
 	def store(self, cfg):
-		for opt, value in self.options.iteritems():
+		for opt, value in sorted(self.options.items()):
 			cfg.write(self.config_to_string(opt, value) + "\n")
 
+        def store_file(self, filename):
+                cfg = open(filename, 'w')
+                self.store(cfg)
+                cfg.close()
+
         def store_diff(self, cfg):
-                for opt, value in self.options.iteritems():
+                for opt, value in sorted(self.options.items()):
                         optstr = "CONFIG_" + opt
                         newval = self.value_to_string(value)
                         oldval = self.value_to_string(self.old_options[opt])
                         cfg.write(optstr + "=" + newval + " (changed from: " + oldval + ")\n")
+
+        def store_diff_file(self, filename):
+                cfg = open(filename, 'w')
+                self.store_diff(cfg)
+                cfg.close()
 
 	def trim_by_dist_config(self, dist):
 		trimmed = KernelConfig()
@@ -164,91 +179,53 @@ class KernelConfig:
 
                 return (was_disabled, is_missing, was_changed, new_option, dist_new_option, dist_is_missing, dist_was_changed, dist_was_disabled)
 
-
 action = sys.argv[1];
 
 if action == "--trim":
 
-	user_config_file = open(sys.argv[2], 'r')
-	dist_config_file = open(sys.argv[3], 'r')
-
 	user_config = KernelConfig()
 	dist_config = KernelConfig()
 
-	user_config.parse(user_config_file)
-	dist_config.parse(dist_config_file)
-
-	user_config_file.close()
-	dist_config_file.close()
+	user_config.parse_file(sys.argv[2])
+	dist_config.parse_file(sys.argv[3])
 
 	trim_config = user_config.trim_by_dist_config(dist_config)
-	trim_config_file = open(sys.argv[4], 'w')
-	trim_config.store(trim_config_file)
-	trim_config_file.close()
+	trim_config.store_file(sys.argv[4])
 
 elif action == "--combine":
 
-	user_config_file = open(sys.argv[2], 'r')
-	dist_config_file = open(sys.argv[3], 'r')
-
 	user_config = KernelConfig()
 	dist_config = KernelConfig()
 
-	user_config.parse(user_config_file)
-	dist_config.parse(dist_config_file)
-
-	user_config_file.close()
-	dist_config_file.close()
+	user_config.parse_file(sys.argv[2])
+	dist_config.parse_file(sys.argv[3])
 
 	comb_config = user_config.combine_with_dist_config(dist_config)
-	comb_config_file = open(sys.argv[4], 'w')
-	comb_config.store(comb_config_file)
-	comb_config_file.close()
+	comb_config.store_file(sys.argv[4])
 
 elif action == "--diff":
 
-	user_config_file = open(sys.argv[2], 'r')
-	dist_config_file = open(sys.argv[3], 'r')
-	comb_config_file = open(sys.argv[4], 'r')
+        diff_path = sys.argv[5] + "/"
 
 	user_config = KernelConfig()
 	dist_config = KernelConfig()
 	comb_config = KernelConfig()
 
-	user_config.parse(user_config_file)
-	dist_config.parse(dist_config_file)
-	comb_config.parse(comb_config_file)
-
-	user_config_file.close()
-	dist_config_file.close()
-	comb_config_file.close()
+	user_config.parse_file(sys.argv[2])
+	dist_config.parse_file(sys.argv[3])
+	comb_config.parse_file(sys.argv[4])
 
         (was_disabled, is_missing, was_changed, new_option, dist_new_option, dist_is_missing, dist_was_changed, dist_was_disabled) = \
             user_config.compare_user_with_combined(comb_config, dist_config)
 
-        print "The following options were disabled in the user config:\n"
-        was_disabled.store(sys.stdout)
-
-        print "\nThe following options from user config are missing:\n"
-        is_missing.store(sys.stdout)
-
-        print "\nThe following options from user config changed value:\n"
-        was_changed.store_diff(sys.stdout)
-
-        print "\nThe following options were not known by user nor distro config:\n"
-        new_option.store(sys.stdout)
-
-        print "\nThe following options were disabled in the distro config\n"
-        dist_was_disabled.store(sys.stdout)
-
-        print "\nThe following options from distro config changed value:\n"
-        dist_was_changed.store_diff(sys.stdout)
-
-        print "\nThe following options from distro config are missing:\n"
-        dist_is_missing.store(sys.stdout)
-
-        print "\nThe following options from distro config are new:\n"
-        dist_new_option.store(sys.stdout)
+        was_disabled.store_file(diff_path + "was_disabled")
+        is_missing.store_file(diff_path + "is_missing")
+        was_changed.store_diff_file(diff_path + "was_changed")
+        new_option.store_file(diff_path + "new_options")
+        dist_was_disabled.store_file(diff_path + "dist_was_disabled")
+        dist_was_changed.store_diff_file(diff_path + "dist_was_changed")
+        dist_is_missing.store_file(diff_path + "dist_is_missing")
+        dist_new_option.store_file(diff_path + "dist_new_options")
 
 else:
 	sys.stderr.write("unknown action: " + action + "\n")
