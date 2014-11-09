@@ -7,6 +7,7 @@ class KernelConfig:
 
 	def __init__(self):
         	self.options = dict()
+                self.options_match_distro = dict()
                 self.old_options = dict()
 
 	def parse(self, cfg):
@@ -22,11 +23,15 @@ class KernelConfig:
 			
 				if m:
 					self.options[m.group(1)] = ("simple", "n")
-					continue
 					# print "CONFIG " + m.group(1) + " is not set"
 				else:
-					# print "skip comment: " + line
-					continue
+                                        m = re.match("^# CONFIG_([^ ]+) matches distro$", line)
+
+                                        if m:
+                                                self.options_match_distro[m.group(1)] = True
+                                        else:
+					        # print "skip comment: " + line
+					        continue
 				continue
 
 			m = re.match("^CONFIG_([^=]+)=([ym])$", line)
@@ -81,6 +86,9 @@ class KernelConfig:
 
 	def store(self, cfg):
 		for opt, value in sorted(self.options.items()):
+                        if opt in self.options_match_distro:
+                                option = "CONFIG_" + opt
+                                cfg.write("# " + option + " matches distro\n")
 			cfg.write(self.config_to_string(opt, value) + "\n")
 
         def store_file(self, filename):
@@ -106,11 +114,9 @@ class KernelConfig:
 		# everything that user sets which is not in dist, or
 		# differs from dist, will be included in trimmed config
 		for opt, value in self.options.iteritems():
-			if opt not in dist.options:
-				trimmed.options[opt] = value
-				continue
-			if value != dist.options[opt]:
-				trimmed.options[opt] = value
+                        trimmed.options[opt] = value
+			if opt in dist.options and value == dist.options[opt]:
+                                trimmed.options_match_distro[opt] = True
 
 		# everything that dist sets and is missing in user config,
 		# will be explicitly disabled in trimmed config
@@ -122,8 +128,13 @@ class KernelConfig:
 
 	def combine_with_dist_config(self, dist):
 		combined = KernelConfig()
-		combined.options = self.options.copy()
+                # start with everything from user config that didn't match
+                # the corresponding distro config
+                for opt, value in self.options.iteritems():
+                    if opt not in self.options_match_distro:
+                        combined.options[opt] = value
 
+                # add values from new distro config
 		for opt, value in dist.options.iteritems():
 			if opt not in combined.options:
 				combined.options[opt] = value
@@ -140,43 +151,62 @@ class KernelConfig:
                 dist_is_missing = KernelConfig()
                 dist_was_changed = KernelConfig()
 
+                # see what was changed against the user config
 		for opt, value in self.options.iteritems():
+                        # options matching the old distro config are not important
+                        if opt in self.options_match_distro:
+                                continue
 			if value == ("simple", "n"):
+                                # disabled options that disappeared are not important
 				if opt not in comb.options:
 					continue
+                                # record disabled options that became enabled
 				if value != comb.options[opt]:
                                         was_disabled.options[opt] = comb.options[opt]
 					continue
+                        # record options that were enabled and are gone completely
 			if opt not in comb.options:
                                 is_missing.options[opt] = value
                                 continue
+                        # record options whose value changed (including being disabled)
                         if value != comb.options[opt]:
                                 was_changed.options[opt] = comb.options[opt]
                                 was_changed.old_options[opt] = value
 
-                for opt, value in comb.options.iteritems():
-                        if opt not in self.options:
-                                if value == ("simple", "n"):
-                                        continue
-                                if opt not in dist.options:
-                                        new_option.options[opt] = value
-                                else:
-                                        dist_new_option.options[opt] = value
-
+                # see what was changed agains the new distro config 
                 for opt, value in dist.options.iteritems():
-                        if opt in self.options:
+                        # options handled by the user config diff are skipped here
+                        if opt in self.options and opt not in self.options_match_distro:
                                 continue
+                        # record options that were enabled and are gone completely
                         if opt not in comb.options:
                                 if value != ("simple", "n"):
                                         dist_is_missing.options[opt] = value
                                 continue
+                        # record options whose value changed (including being disabled)
                         if value != comb.options[opt]:
+                                # record disabled options that became enabled
                                 if value == ("simple", "n"):
                                         dist_was_disabled[opt] = comb.options[opt]
                                 else:
                                         dist_was_changed.options[opt] = comb.options[opt]
                                         dist_was_changed.old_options[opt] = value
 
+                # record options that are new, and unknown by user config and/or distro config
+                for opt, value in comb.options.iteritems():
+                        # disabled options are unimportant
+                        if value == ("simple", "n"):
+                                continue
+                        # skip options known to user config (matching distro or not doesn't matter)
+                        if opt in self.options:
+                                continue
+                        # completely new options had values taken from upstream KConfig default
+                        if opt not in dist.options:
+                                new_option.options[opt] = value
+                        else:
+                                # the rest got value from distro config
+                                dist_new_option.options[opt] = value
+                                
                 return (was_disabled, is_missing, was_changed, new_option, dist_new_option, dist_is_missing, dist_was_changed, dist_was_disabled)
 
 action = sys.argv[1];
