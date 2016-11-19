@@ -1,7 +1,10 @@
 #!/usr/bin/env python2
 
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 import re
+import six
 
 
 class KernelConfig:
@@ -59,7 +62,7 @@ class KernelConfig:
                 # print "CONFIG " + m.group(1) + " is set to " + m.group(2)
                 continue
 
-            print "unmatched line: " + line
+            print("unmatched line: " + line)
 
     def parse_file(self, filename):
         cfg = open(filename, 'r')
@@ -115,14 +118,14 @@ class KernelConfig:
 
         # everything that user sets which is not in dist, or
         # differs from dist, will be included in trimmed config
-        for opt, value in self.options.iteritems():
+        for opt, value in six.iteritems(self.options):
             trimmed.options[opt] = value
             if opt in dist.options and value == dist.options[opt]:
                 trimmed.options_match_distro[opt] = True
 
         # everything that dist sets and is missing in user config,
         # will be explicitly disabled in trimmed config
-        for opt in dist.options.iterkeys():
+        for opt in six.iterkeys(dist.options):
             if opt not in self.options:
                 trimmed.options[opt] = ("simple", "n")
 
@@ -132,12 +135,12 @@ class KernelConfig:
         combined = KernelConfig()
         # start with everything from user config that didn't match
         # the corresponding distro config
-        for opt, value in self.options.iteritems():
+        for opt, value in six.iteritems(self.options):
             if opt not in self.options_match_distro:
                 combined.options[opt] = value
 
         # add values from new distro config
-        for opt, value in dist.options.iteritems():
+        for opt, value in six.iteritems(dist.options):
             if opt not in combined.options:
                 combined.options[opt] = value
 
@@ -154,7 +157,7 @@ class KernelConfig:
         dist_was_changed = KernelConfig()
 
         # see what was changed against the user config
-        for opt, value in self.options.iteritems():
+        for opt, value in six.iteritems(self.options):
             # options matching the old distro config are not important
             if opt in self.options_match_distro:
                 continue
@@ -176,7 +179,7 @@ class KernelConfig:
                 was_changed.old_options[opt] = value
 
         # see what was changed agains the new distro config
-        for opt, value in dist.options.iteritems():
+        for opt, value in six.iteritems(dist.options):
             # options handled by the user config diff are skipped here
             if opt in self.options and opt not in self.options_match_distro:
                 continue
@@ -196,7 +199,7 @@ class KernelConfig:
 
         # record options that are new, and unknown by user config and/or distro
         # config
-        for opt, value in comb.options.iteritems():
+        for opt, value in six.iteritems(comb.options):
             # disabled options are unimportant
             if value == ("simple", "n"):
                 continue
