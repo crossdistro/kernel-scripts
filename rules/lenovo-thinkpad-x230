@@ -1,0 +1,48 @@
+# Trachpoint wouldn't work without this.
+CONFIG_MOUSE_SYNAPTICS_I2C
+
+# From lspci output:
+#
+# 00:00.0 Host bridge: Intel Corporation 3rd Gen Core processor DRAM Controller (rev 09)
+# 00:02.0 VGA compatible controller: Intel Corporation 3rd Gen Core processor Graphics Controller (rev 09)
+CONFIG_DRM_I915
+CONFIG_DRM_I915_KMS
+# 00:14.0 USB controller: Intel Corporation 7 Series/C210 Series Chipset Family USB xHCI Host Controller (rev 04)
+# 00:16.0 Communication controller: Intel Corporation 7 Series/C210 Series Chipset Family MEI Controller #1 (rev 04)
+# 00:19.0 Ethernet controller: Intel Corporation 82579LM Gigabit Network Connection (rev 04)
+CONFIG_E1000E
+# 00:1a.0 USB controller: Intel Corporation 7 Series/C210 Series Chipset Family USB Enhanced Host Controller #2 (rev 04)
+CONFIG_USB_EHCI_PCI
+# 00:1b.0 Audio device: Intel Corporation 7 Series/C210 Series Chipset Family High Definition Audio Controller (rev 04)
+CONFIG_SND_HDA_INTEL
+# 00:1c.0 PCI bridge: Intel Corporation 7 Series/C210 Series Chipset Family PCI Express Root Port 1 (rev c4)
+# 00:1c.1 PCI bridge: Intel Corporation 7 Series/C210 Series Chipset Family PCI Express Root Port 2 (rev c4)
+# 00:1c.2 PCI bridge: Intel Corporation 7 Series/C210 Series Chipset Family PCI Express Root Port 3 (rev c4)
+# 00:1d.0 USB controller: Intel Corporation 7 Series/C210 Series Chipset Family USB Enhanced Host Controller #1 (rev 04)
+CONFIG_USB_EHCI_PCI
+# 00:1f.0 ISA bridge: Intel Corporation QM77 Express Chipset LPC Controller (rev 04)
+# 00:1f.2 SATA controller: Intel Corporation 7 Series Chipset Family 6-port SATA Controller [AHCI mode] (rev 04)
+CONFIG_SATA_AHCI
+# 00:1f.3 SMBus: Intel Corporation 7 Series/C210 Series Chipset Family SMBus Controller (rev 04)
+# 02:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 04)
+# 03:00.0 Network controller: Realtek Semiconductor Co., Ltd. RTL8188CE 802.11b/g/n WiFi Adapter (rev 01)
+CONFIG_RTL8192CE
+# 03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
+CONFIG_IWLWIFI
+CONFIG_IWLMVM
+CONFIG_IWLDVM
+
+# From lsusb output:
+#
+# Bus 004 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
+# Bus 004 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+# Bus 003 Device 003: ID 0a5c:21e6 Broadcom Corp. BCM20702 Bluetooth 4.0 [ThinkPad]
+CONFIG_BT_HCIUSB || CONFIG_BT_HCIBTUSB
+	CONFIG_NET
+	CONFIG_BT
+	CONFIG_USB
+# Bus 003 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub
+# Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+# Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+# Bus 001 Device 002: ID 0bdb:1926 Ericsson Business Mobile Networks BV 
+# Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
