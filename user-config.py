@@ -1,10 +1,7 @@
-#!/usr/bin/env python2
+#!/usr/bin/python
 
-from __future__ import absolute_import
-from __future__ import print_function
 import sys
 import re
-import six
 
 
 class KernelConfig:
@@ -118,14 +115,14 @@ class KernelConfig:
 
         # everything that user sets which is not in dist, or
         # differs from dist, will be included in trimmed config
-        for opt, value in six.iteritems(self.options):
+        for opt, value in self.options.items():
             trimmed.options[opt] = value
             if opt in dist.options and value == dist.options[opt]:
                 trimmed.options_match_distro[opt] = True
 
         # everything that dist sets and is missing in user config,
         # will be explicitly disabled in trimmed config
-        for opt in six.iterkeys(dist.options):
+        for opt in dist.options.keys():
             if opt not in self.options:
                 trimmed.options[opt] = ("simple", "n")
 
@@ -135,12 +132,12 @@ class KernelConfig:
         combined = KernelConfig()
         # start with everything from user config that didn't match
         # the corresponding distro config
-        for opt, value in six.iteritems(self.options):
+        for opt, value in self.options.items():
             if opt not in self.options_match_distro:
                 combined.options[opt] = value
 
         # add values from new distro config
-        for opt, value in six.iteritems(dist.options):
+        for opt, value in dist.options.items():
             if opt not in combined.options:
                 combined.options[opt] = value
 
@@ -157,7 +154,7 @@ class KernelConfig:
         dist_was_changed = KernelConfig()
 
         # see what was changed against the user config
-        for opt, value in six.iteritems(self.options):
+        for opt, value in self.options.items():
             # options matching the old distro config are not important
             if opt in self.options_match_distro:
                 continue
@@ -179,7 +176,7 @@ class KernelConfig:
                 was_changed.old_options[opt] = value
 
         # see what was changed agains the new distro config
-        for opt, value in six.iteritems(dist.options):
+        for opt, value in dist.options.items():
             # options handled by the user config diff are skipped here
             if opt in self.options and opt not in self.options_match_distro:
                 continue
@@ -199,7 +196,7 @@ class KernelConfig:
 
         # record options that are new, and unknown by user config and/or distro
         # config
-        for opt, value in six.iteritems(comb.options):
+        for opt, value in comb.options.items():
             # disabled options are unimportant
             if value == ("simple", "n"):
                 continue
