@@ -1,0 +1,12 @@
+# /usr/portage/dev-util/systemtap/systemtap-2.5.ebuild:
+#
+# From dev-util/systemtap-2.5.ebuild: CONFIG_CHECK="~KPROBES ~RELAY ~DEBUG_FS"
+# See also: https://sourceware.org/systemtap/wiki/SystemTapWithSelfBuiltKernel
+#
+#CONFIG_DEBUG_INFO
+CONFIG_KPROBES
+CONFIG_RELAY
+CONFIG_DEBUG_FS
+#CONFIG_MODULES
+#CONFIG_MODULE_UNLOAD
+#CONFIG_UPROBES
