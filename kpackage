@@ -1,0 +1,31 @@
+#!/usr/bin/python
+
+import os
+import subprocess
+import functools
+
+pkgdata_path = "/var/db/pkg/"
+
+popen = functools.partial(subprocess.Popen, stdout=subprocess.PIPE, universal_newlines=True)
+
+def get_package_configs():
+    for category in os.listdir(pkgdata_path):
+        category_path = os.path.join(pkgdata_path, category)
+        for package in os.listdir(category_path):
+            package_path = os.path.join(category_path, package)
+            env_path = os.path.join(package_path, "environment.bz2")
+            with popen(["bash"], stdin=subprocess.PIPE) as shell:
+                with popen(["bzcat", env_path]) as env:
+                    shell.stdin.write(env.stdout.read())
+                    shell.stdin.write('echo "$CONFIG_CHECK"')
+                    shell.stdin.close()
+                config = shell.stdout.read().split()
+                # Remove tilde sign that just denotes a warning.
+                config = [item.lstrip("~") for item in config]
+                if config:
+                    yield env_path, config
+
+for path, config in get_package_configs():
+    print("# {}".format(path))
+    for item in config:
+        print("CONFIG_" + item)

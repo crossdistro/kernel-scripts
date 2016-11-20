@@ -1,0 +1,11 @@
+#!/usr/bin/python
+
+import sys
+
+from kernel.config import KernelConfig
+
+config = KernelConfig()
+for filename in sys.argv[1:]:
+    with open(filename) as stream:
+        config.load(stream)
+config.dump(sys.stdout)
