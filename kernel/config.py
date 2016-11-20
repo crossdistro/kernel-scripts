@@ -4,9 +4,51 @@ import re
 class KernelConfig:
 
     def __init__(self):
-        self.options = dict()
-        self.options_match_distro = dict()
-        self.old_options = dict()
+        self.source = None
+        self.options = collections.OrderedDict()
+        self.options_match_distro = {}
+        self.old_options = {}
+        self.alternatives = []
+
+    def __repr__(self):
+        unset = yes = module = no = other = 0
+        for name, value in self.options.items() :
+            if value == None:
+                unset += 1
+            elif value == 'y':
+                yes += 1
+            elif value == 'm':
+                module += 1
+            elif value == 'n':
+                no += 1
+            else:
+                other += 1
+        return "<Config source={self.source!r} yes={yes} module={module} no={no} unset={unset} other={other}>".format(**locals())
+
+    @staticmethod
+    def from_stream(stream, source=None):
+        config = Config()
+        config.source = source
+
+        for line in stream:
+            if line.startswith('#'):
+                continue
+            options = [args for args in (token.strip().split('=', 2) for token in line.split('||')) if args and args[0]]
+            for args in options:
+                config.options[args[0]] = args[1] if len(args) == 2 else None
+            config.alternatives.append([args[0] for args in options])
+
+        return config
+
+    @staticmethod
+    def from_file(filename):
+        with open(filename) as stream:
+            return Config.from_stream(stream, filename)
+
+    @staticmethod
+    def from_gzipped_file(filename):
+        with gzip.open(filename, "rt") as stream:
+            return Config.from_stream(stream, filename)
 
     def parse(self, cfg):
         for line in cfg:
