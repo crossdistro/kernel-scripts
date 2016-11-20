@@ -1,4 +1,5 @@
 import re
+import collections
 
 
 class KernelConfig:
@@ -23,11 +24,11 @@ class KernelConfig:
                 no += 1
             else:
                 other += 1
-        return "<Config source={self.source!r} yes={yes} module={module} no={no} unset={unset} other={other}>".format(**locals())
+        return "<KernelConfig source={self.source!r} yes={yes} module={module} no={no} unset={unset} other={other}>".format(**locals())
 
     @staticmethod
     def from_stream(stream, source=None):
-        config = Config()
+        config = KernelConfig()
         config.source = source
 
         for line in stream:
@@ -43,12 +44,12 @@ class KernelConfig:
     @staticmethod
     def from_file(filename):
         with open(filename) as stream:
-            return Config.from_stream(stream, filename)
+            return KernelConfig.from_stream(stream, filename)
 
     @staticmethod
     def from_gzipped_file(filename):
         with gzip.open(filename, "rt") as stream:
-            return Config.from_stream(stream, filename)
+            return KernelConfig.from_stream(stream, filename)
 
     def parse(self, cfg):
         for line in cfg:
