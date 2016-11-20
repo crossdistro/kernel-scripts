@@ -8,6 +8,11 @@ TBD
 
 A tool to configure kernel in a reliable and reproducible way.
 
+### kpackage
+
+A tool to generate kernel configuration from the metadata of all installed
+packages.
+
 ## References
 
   * [Towards “emerge gentoo-kernel”](https://www.linuxdays.cz/2014/video/Vlastimil_Babka-Towards_automatic_kernel_configuration.pdf)
