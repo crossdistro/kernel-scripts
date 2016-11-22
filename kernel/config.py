@@ -26,20 +26,30 @@ class KernelConfig:
                 other += 1
         return "<KernelConfig source={self.source!r} yes={yes} module={module} no={no} unset={unset} other={other}>".format(**locals())
 
-    @staticmethod
-    def from_stream(stream, source=None):
-        config = KernelConfig()
-        config.source = source
-
+    def load(self, stream):
         for line in stream:
             if line.startswith('#'):
                 continue
             options = [args for args in (token.strip().split('=', 2) for token in line.split('||')) if args and args[0]]
             for args in options:
-                config.options[args[0]] = args[1] if len(args) == 2 else None
-            config.alternatives.append([args[0] for args in options])
+                self.options[args[0]] = args[1] if len(args) == 2 else None
+            self.alternatives.append([args[0] for args in options])
 
-        return config
+    def dump(self, stream, use_modules=False):
+        for name, value in self.options.items():
+            if value is None:
+                stream.write("{0}=y\n".format(name))
+                if use_modules:
+                    stream.write("{0}=m\n".format(name))
+            else:
+                stream.write("{}={}\n".format(name, value))
+
+    @staticmethod
+    def from_stream(stream, source=None):
+        config = KernelConfig()
+        config.source = source
+        config.load(stream)
+
 
     @staticmethod
     def from_file(filename):
