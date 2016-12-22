@@ -60,9 +60,10 @@ class Application:
             self.configure(args.modules)
         elif args.check:
             if args.CONFIG_FILE:
-                self.check(*[KernelConfig.from_file(path) for path in args.CONFIG_FILE])
+                configs = [KernelConfig.from_file(path) for path in args.CONFIG_FILE]
             else:
-                self.check(*([KernelConfig.from_gzipped_file("/proc/config.gz")] + [KernelConfig.from_file(path) for path in glob.glob("/etc/kernels/*")]))
+                configs = [KernelConfig.from_gzipped_file("/proc/config.gz")] + [KernelConfig.from_file(path) for path in glob.glob("/etc/kernels/*")]
+            self.check(*configs)
         else:
             parser.print_help()
             exit(1)
