@@ -50,7 +50,7 @@ class KernelConfig:
         config = KernelConfig()
         config.source = source
         config.load(stream)
-
+        return config
 
     @staticmethod
     def from_file(filename):
